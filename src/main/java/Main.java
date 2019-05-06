@@ -24,7 +24,8 @@ public class Main extends Application {
         primaryStage.setTitle("Petri Nets");
         primaryStage.show();
 
-        //new comment
+
+        //tu som pridal komentar
 
     }
 }
