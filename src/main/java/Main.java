@@ -24,7 +24,7 @@ public class Main extends Application {
         primaryStage.setTitle("Petri Nets");
         primaryStage.show();
 
-        //maine koment
+        //new comment
 
     }
 }
