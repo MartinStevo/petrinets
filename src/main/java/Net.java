@@ -17,6 +17,14 @@ public class Net {
         return arcMap;
     }
 
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
     public void addPlace(Long id, String placeName, int placeValue) throws DuplicateException, WrongValueException {
         Place p = new Place(id, placeName, placeValue);
         id++;
@@ -24,10 +32,13 @@ public class Net {
         checkUniqueness(p);
     }
 
-    public void addPlace() {
+    public Place addPlace() {
         Place p = new Place();
         p.setId(id);
+        p.setName("p" + id);
         id++;
+        placeList.add(p);
+        return p;
     }
 
     public void addTransition(Long id, String transitionName) throws DuplicateException {
@@ -36,10 +47,13 @@ public class Net {
         checkUniqueness(t);
     }
 
-    public void addTransition() {
+    public Transition addTransition() {
         Transition t = new Transition();
         t.setId(id);
+        t.setName("t" + id);
         id++;
+        transitionList.add(t);
+        return t;
     }
 
     public void addPlaceToTransitionArc(Long id, Long place, Long transition, int value) throws MissingObjectException, WrongValueException {

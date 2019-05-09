@@ -36,14 +36,14 @@ public class DrawableTransformer extends Transformer<List<Drawable>> {
 
         for (generated.Place p : document.getPlace()) {
             Place place = net.findPlace((long)p.getId());
-            Place2D place2d = new Place2D(p.getX(), p.getY(), place);
+            Place2D place2d = new Place2D((long)p.getId(),p.getX(), p.getY(), place);
             place2DList.add(place2d);
             place2DMap.put(p.getId(), place2d);
         }
 
         for (generated.Transition t : document.getTransition()) {
             Transition transition = net.findTransition((long)t.getId());
-            Transition2D transition2D = new Transition2D(t.getX(), t.getY(), transition);
+            Transition2D transition2D = new Transition2D((long)t.getId(),t.getX(), t.getY(), transition);
             transition2DList.add(transition2D);
             transition2DMap.put(t.getId(), transition2D);
         }

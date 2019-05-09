@@ -1,5 +1,9 @@
 package gui;
 
+import Exceptions.MissingObjectException;
+import Exceptions.UnfireableTransitionException;
+import Exceptions.WrongArcException;
+import Exceptions.WrongValueException;
 import components.Arc;
 import components.ResetArc;
 import javafx.scene.layout.Pane;
@@ -18,6 +22,7 @@ public class Arc2D implements Drawable {
     private int value;
     private Arc arc;
     private Line line;
+    private Polygon polygon;
 
     public Arc2D(short sourceX, short sourceY, short destinationX, short destinationY, int value, Arc arc) {
         this.sourceX = sourceX;
@@ -33,12 +38,31 @@ public class Arc2D implements Drawable {
         line = new Line(sourceX * coefX, sourceY * coefY, destinationX * coefX, destinationY * coefY);
         line.setFill(Color.BLACK);
         pane.getChildren().add(line);
-        drawTriangle(sourceX * coefX, sourceY * coefY, destinationX * coefX, destinationY * coefY, pane);
+        drawTriangle(sourceX * coefX, sourceY * coefY, destinationX * coefX, destinationY * coefY, pane, netUpdateListener);
     }
 
-    private void drawTriangle(double startX, double startY, double endX, double endY, Pane pane) {
+    @Override
+    public long getId() {
+        return arc.getId();
+    }
 
-        Polygon polygon = new Polygon();
+    @Override
+    public short getX() {
+        return 0;
+    }
+
+    @Override
+    public short getY() {
+        return 0;
+    }
+
+    public Arc getArc() {
+        return arc;
+    }
+
+    private void drawTriangle(double startX, double startY, double endX, double endY, Pane pane, NetUpdateListener netUpdateListener) {
+
+        polygon = new Polygon();
         Double angle = getAngle(startX, startY, endX, endY);
         Double paramX = (endX - startX) / 8;
         Double paramY = (endY - startY) / 8;
@@ -63,6 +87,15 @@ public class Arc2D implements Drawable {
             );
         }
 
+        polygon.setOnMouseClicked(event -> {
+            try {
+                click(netUpdateListener);
+            } catch (WrongValueException | WrongArcException | MissingObjectException | UnfireableTransitionException e) {
+                e.printStackTrace();
+            }
+        });
+
+
         polygon.setRotate(angle);
         pane.getChildren().add(polygon);
     }
@@ -81,5 +114,19 @@ public class Arc2D implements Drawable {
         text.setFill(Color.BLACK);
         text.setFont(Font.font(10));
         pane.getChildren().add(text);
+    }
+
+    @Override
+    public void click(NetUpdateListener netUpdateListener) throws WrongArcException, MissingObjectException, WrongValueException, UnfireableTransitionException {
+        switch(netUpdateListener.getSelectedEventType()){
+
+            case DELETE: {
+                netUpdateListener.deleteDrawable(getId());
+                break;
+            }
+        }
+
+        netUpdateListener.setOnClickedId(arc.getId());
+        netUpdateListener.updateNet();
     }
 }

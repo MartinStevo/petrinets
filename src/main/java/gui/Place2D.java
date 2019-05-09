@@ -1,6 +1,12 @@
 package gui;
 
+import Exceptions.MissingObjectException;
+import Exceptions.UnfireableTransitionException;
+import Exceptions.WrongArcException;
+import Exceptions.WrongValueException;
 import components.Place;
+import javafx.event.EventHandler;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
@@ -15,23 +21,31 @@ public class Place2D implements Drawable {
     private Circle circle;
     private Text text;
     private Text textPlace;
+    private Long id;
 
-    public Place2D(short x, short y, Place place) {
+    public Place2D(Long id, short x, short y, Place place) {
         this.x = x;
         this.y = y;
         this.place = place;
     }
 
+    @Override
     public short getX() {
         return x;
     }
 
+    @Override
     public short getY() {
         return y;
     }
 
-    public Place2D() {
+    @Override
+    public long getId() {
+        return place.getId();
+    }
 
+    public Place getPlace() {
+        return place;
     }
 
     @Override
@@ -39,6 +53,13 @@ public class Place2D implements Drawable {
         circle = new Circle(x * coefX, y * coefY, 20);
         circle.setFill(Color.WHITE);
         circle.setStroke(Color.BLACK);
+        circle.setOnMouseClicked(event -> {
+            try {
+                click(netUpdateListener);
+            } catch (WrongValueException | WrongArcException | MissingObjectException e) {
+                e.printStackTrace();
+            }
+        });
         pane.getChildren().add(circle);
 
         text = new Text();
@@ -55,5 +76,36 @@ public class Place2D implements Drawable {
         textPlace.setFill(Color.BLACK);
         textPlace.setFont(Font.font(10));
         pane.getChildren().add(textPlace);
+    }
+
+    @Override
+    public void click(NetUpdateListener netUpdateListener) throws WrongValueException, WrongArcException, MissingObjectException {
+        switch(netUpdateListener.getSelectedEventType()){
+            case ADD_TOKEN: {
+                place.setValue(place.getValue() + 1);
+                break;
+            }
+            case REMOVE_TOKEN: {
+                if (place.getValue() != 0) {
+                    place.setValue(place.getValue() - 1);
+                    break;
+                }
+            }
+            case ADD_ARC_START: {
+                netUpdateListener.createArcStart(place.getId());
+                break;
+            }
+            case ADD_ARC_END: {
+                netUpdateListener.createArcEnd(place.getId());
+                break;
+            }
+            case DELETE: {
+                netUpdateListener.deleteDrawable(getId());
+                break;
+            }
+
+        }
+        netUpdateListener.setOnClickedId(place.getId());
+        netUpdateListener.updateNet();
     }
 }
