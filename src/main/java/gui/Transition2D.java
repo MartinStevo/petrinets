@@ -2,6 +2,8 @@ package gui;
 
 import Exceptions.MissingObjectException;
 import Exceptions.UnfireableTransitionException;
+import Exceptions.WrongArcException;
+import Exceptions.WrongValueException;
 import components.Arc;
 import components.Transition;
 import javafx.scene.layout.Pane;
@@ -20,22 +22,29 @@ public class Transition2D implements Drawable {
     private Rectangle rectangle;
     private Text text;
 
-    public Transition2D(short x, short y, Transition transition) {
+    public Transition2D(Long id, short x, short y, Transition transition) {
         this.x = x;
         this.y = y;
         this.transition = transition;
     }
 
-    public Transition2D() {
-
-    }
-
+    @Override
     public short getX() {
         return x;
     }
 
+    @Override
     public short getY() {
         return y;
+    }
+
+    @Override
+    public long getId() {
+        return transition.getId();
+    }
+
+    public Transition getTransition() {
+        return transition;
     }
 
     @Override
@@ -47,13 +56,8 @@ public class Transition2D implements Drawable {
 
         rectangle.setOnMouseClicked(event -> {
             try {
-                transition.fire();
-                if (!transition.isValidTransition()) {
-                    rectangle.setFill(Color.RED);
-                }
-                netUpdateListener.updateNet();
-                //setTokens();
-            } catch (MissingObjectException | UnfireableTransitionException e) {
+                click(netUpdateListener);
+            } catch (WrongValueException | WrongArcException | MissingObjectException | UnfireableTransitionException e) {
                 e.printStackTrace();
             }
         });
@@ -79,4 +83,46 @@ public class Transition2D implements Drawable {
         arcList.addAll(transition.resetArcList);
         return  arcList;
     }
+
+    @Override
+    public void click(NetUpdateListener netUpdateListener) throws WrongArcException, MissingObjectException, WrongValueException, UnfireableTransitionException {
+        switch(netUpdateListener.getSelectedEventType()){
+            case ADD_ARC_START: {
+                netUpdateListener.createArcStart(transition.getId());
+                break;
+            }
+            case ADD_ARC_END: {
+                netUpdateListener.createArcEnd(transition.getId());
+                break;
+            }
+            case ADD_RESET_ARC_START: {
+                netUpdateListener.createResetArcStart(transition.getId());
+                break;
+            }
+            case ADD_RESET_ARC_END: {
+                netUpdateListener.createResetArcEnd(transition.getId());
+                break;
+            }
+            case FIRE: {
+                transition.fire();
+                if (!transition.isValidTransition()) {
+                    rectangle.setFill(Color.RED);
+                }
+                break;
+            }
+            case DELETE: {
+                netUpdateListener.deleteDrawable(getId());
+                break;
+            }
+        }
+
+        netUpdateListener.setOnClickedId(transition.getId());
+        netUpdateListener.updateNet();
+    }
+
+
 }
+
+/*
+
+ */
