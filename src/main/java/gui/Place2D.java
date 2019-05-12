@@ -99,6 +99,14 @@ public class Place2D implements Drawable {
                 netUpdateListener.createArcEnd(place.getId());
                 break;
             }
+            case ADD_RESET_ARC_START: {
+                netUpdateListener.createResetArcStart(place.getId());
+                break;
+            }
+            case ADD_RESET_ARC_END: {
+                netUpdateListener.createResetArcEnd(place.getId());
+                break;
+            }
             case DELETE: {
                 netUpdateListener.deleteDrawable(getId());
                 break;

@@ -130,4 +130,15 @@ public class Document {
         return this.arc;
     }
 
+    public void setPlace(List<Place> place) {
+        this.place = place;
+    }
+
+    public void setTransition(List<Transition> transition) {
+        this.transition = transition;
+    }
+
+    public void setArc(List<Arc> arc) {
+        this.arc = arc;
+    }
 }

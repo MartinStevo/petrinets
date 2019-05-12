@@ -95,6 +95,14 @@ public class Transition2D implements Drawable {
                 netUpdateListener.createArcEnd(transition.getId());
                 break;
             }
+            case ADD_RESET_ARC_START: {
+                netUpdateListener.createResetArcStart(transition.getId());
+                break;
+            }
+            case ADD_RESET_ARC_END: {
+                netUpdateListener.createResetArcEnd(transition.getId());
+                break;
+            }
             case FIRE: {
                 transition.fire();
                 if (!transition.isValidTransition()) {

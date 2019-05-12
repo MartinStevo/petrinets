@@ -17,8 +17,10 @@ import jdk.nashorn.internal.runtime.arrays.IteratorAction;
 import javax.swing.text.html.HTMLDocument;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import java.io.File;
+import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -52,6 +54,9 @@ public class MainViewController implements Initializable, NetUpdateListener {
     private Button addArcButton;
 
     @FXML
+    private Button addResetArcButton;
+
+    @FXML
     private Button addTokenButton;
 
     @FXML
@@ -65,6 +70,9 @@ public class MainViewController implements Initializable, NetUpdateListener {
 
     @FXML
     private Button fireButton;
+
+    @FXML
+    private Button saveButton;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -82,27 +90,13 @@ public class MainViewController implements Initializable, NetUpdateListener {
         addPlaceButton.setOnMouseClicked(event -> selectEvent(addPlaceButton, NetClickEventEnu.ADD_PLACE));
         addTransitionButton.setOnMouseClicked(event -> selectEvent(addTransitionButton, NetClickEventEnu.ADD_TRANSITION));
         addArcButton.setOnMouseClicked(event -> selectEvent(addArcButton, NetClickEventEnu.ADD_ARC_START));
+        addResetArcButton.setOnMouseClicked(event -> selectEvent(addResetArcButton, NetClickEventEnu.ADD_RESET_ARC_START));
         fireButton.setOnMouseClicked(event -> selectEvent(fireButton, NetClickEventEnu.FIRE));
         deleteButton.setOnMouseClicked(event -> selectEvent(deleteButton, NetClickEventEnu.DELETE));
-
-    }
-
-    @FXML
-    public void importXml(ActionEvent event) throws DuplicateException, WrongValueException, MissingObjectException, UnfireableTransitionException, WrongInputException {
-        File file = getFileWithFileChooser((Node) event.getSource());
-        if (file != null) {
-            createNetFromXml(file);
-            //drawNet(net);
-        }
     }
 
     @FXML
     public void onDrawPlaceAction(ActionEvent actionEvent) {
-
-    }
-
-    @FXML
-    public void onAddTokenAction(ActionEvent actionEvent) {
 
     }
 
@@ -160,6 +154,15 @@ public class MainViewController implements Initializable, NetUpdateListener {
 
     }
 
+    @FXML
+    public void importXml(ActionEvent event) throws DuplicateException, WrongValueException, MissingObjectException, UnfireableTransitionException, WrongInputException {
+        File file = getFileWithFileChooser((Node) event.getSource());
+        if (file != null) {
+            createNetFromXml(file);
+            //drawNet(net);
+        }
+    }
+
     private File getFileWithFileChooser(Node node) {
         FileChooser fileChooser = new FileChooser();
         configureFileChooser(fileChooser);
@@ -206,6 +209,38 @@ public class MainViewController implements Initializable, NetUpdateListener {
         updateNet();
     }
 
+    @FXML
+    public void exportXml(ActionEvent event) {
+
+        Exporter exporter = new Exporter(drawables);
+        Document document = exporter.getDocument();
+
+        try {
+            JAXBContext jaxbContext = JAXBContext.newInstance(Document.class);
+
+            FileChooser fileChooser = new FileChooser();
+            configureFileChooserSave(fileChooser);
+            File selectedFile = fileChooser.showSaveDialog(null);
+
+            Marshaller marshaller = jaxbContext.createMarshaller();
+            //marshaller.marshal(document, new File("output.xml"));
+            marshaller.marshal(document, selectedFile);
+        } catch (Exception ignored) {
+            ignored.printStackTrace();
+        }
+    }
+
+    private void configureFileChooserSave(FileChooser fileChooser) {
+        fileChooser.setTitle("Choose xml file");
+        fileChooser.setInitialDirectory(
+
+                new File("src\\main\\resources")
+        );
+        fileChooser.getExtensionFilters().add(
+                new FileChooser.ExtensionFilter("XML", "*.xml")
+        );
+    }
+
     @Override
     public void updateNet() {
         pane.getChildren().clear();
@@ -250,10 +285,37 @@ public class MainViewController implements Initializable, NetUpdateListener {
             drawArc2D(net.getId(), previousClickedId, id);
             net.setId(net.getId() + 1);
         }
-        //else throw new WrongArcException();
+        else throw new WrongArcException();
 
         if (selectedEventType.equals(NetClickEventEnu.ADD_ARC_END)) {
             selectedEventType = NetClickEventEnu.ADD_ARC_START;
+            //addArcButton.setOnMouseClicked(event -> selectEvent(addArcButton, NetClickEventEnu.ADD_ARC_START));
+        }
+
+    }
+
+    @Override
+    public void createResetArcStart(Long id) {
+        this.previousClickedId = id;
+
+        if (selectedEventType.equals(NetClickEventEnu.ADD_RESET_ARC_START)) {
+            selectedEventType = NetClickEventEnu.ADD_RESET_ARC_END;
+            // addArcButton.setOnMouseClicked(event -> selectEvent(addArcButton, NetClickEventEnu.ADD_ARC_END));
+        }
+    }
+
+    @Override
+    public void createResetArcEnd(Long id) throws MissingObjectException {
+
+        if (net.checkPlace(previousClickedId) && net.checkTransition(id)) {
+            net.addResetArc(net.getId(), previousClickedId, id);
+            drawArc2D(net.getId(), previousClickedId, id);
+            net.setId(net.getId() + 1);
+        }
+        //else throw new WrongArcException();
+
+        if (selectedEventType.equals(NetClickEventEnu.ADD_RESET_ARC_END)) {
+            selectedEventType = NetClickEventEnu.ADD_RESET_ARC_END;
             //addArcButton.setOnMouseClicked(event -> selectEvent(addArcButton, NetClickEventEnu.ADD_ARC_START));
         }
 
